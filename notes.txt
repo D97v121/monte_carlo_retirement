@@ -1,0 +1,23 @@
+INPUTS:
+    - ranges
+    - inputs for now
+        - Starting balance
+        - Expected return
+        - Volatility
+        - Withdrawal amount
+        - Inflation
+        - Number of years
+
+Number of simulations
+    - ex format:
+        investment_return = [-number , number]
+
+Random simulation
+Reapeat the random simulation thousands of times
+
+Outputs:
+    Success probability
+    Distribution of ending balances
+    Worst-case years
+    Median outcome
+    Charts
