@@ -1,0 +1,214 @@
+{% extends "simulator/base.html" %}
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+
+    <div>
+        <label>
+            Scenario Name:
+            <input type="text" name="name" value="My Scenario">
+        </label>
+    </div>
+    <br>
+
+    <h2>Inputs</h2>
+
+    <div>
+        <label>
+            Initial Balance:
+            $<span id="initial_balance_value">1,000,000</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="initial_balance"
+            name="initial_balance"
+            min="0"
+            max="100000000"
+            step="50000"
+            value="{{ default_initial_balance }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Mean Return:
+            <span id="mean_return_value">{{ default_mean_return }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="mean_return"
+            name="mean_return"
+            min="-0.05"
+            max="0.15"
+            step="0.005"
+            value="{{ default_mean_return }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Volatility:
+            <span id="volatility_value">{{ default_volatility }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="volatility"
+            name="volatility"
+            min="0.00"
+            max="0.50"
+            step="0.005"
+            value="{{ default_volatility }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Annual Withdrawal:
+            $<span id="annual_withdrawal_value">{{ default_annual_withdrawal }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="annual_withdrawal"
+            name="annual_withdrawal"
+            min="0"
+            max="100000000"
+            step="5000"
+            value="{{ default_annual_withdrawal }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Inflation:
+            <span id="inflation_value">{{ default_inflation }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="inflation"
+            name="inflation"
+            min="0.00"
+            max="0.08"
+            step="0.0025"
+            value="{{ default_inflation }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Years:
+            <span id="years_value">{{ default_years }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="years"
+            name="years"
+            min="5"
+            max="50"
+            step="1"
+            value="{{ default_years }}"
+        >
+    </div>
+    <br>
+
+    <div>
+        <label>
+            Number of Simulations:
+            <span id="n_sims_value">{{ default_n_sims }}</span>
+        </label>
+        <br>
+        <input
+            type="range"
+            id="n_sims"
+            name="n_sims"
+            min="500"
+            max="20000"
+            step="500"
+            value="{{ default_n_sims }}"
+        >
+    </div>
+    <br>
+
+    <!-- This button saves the current slider values as a Scenario -->
+    <button type="submit">Save Scenario</button>
+</form>
+
+<br>
+<!-- This button only runs the simulation via JS; it does NOT submit the form -->
+<button id="run_sim" type="button">Run Simulation</button>
+
+<hr>
+
+<h2>Results</h2>
+<p>Success Rate: <span id="success_rate">–</span></p>
+<p>Median Ending Balance: <span id="median_ending">–</span></p>
+<p>10th Percentile Ending Balance: <span id="p10_ending">–</span></p>
+<p>90th Percentile Ending Balance: <span id="p90_ending">–</span></p>
+
+<script>
+    function bindSlider(id, labelId, formatFn) {
+        const slider = document.getElementById(id);
+        const label = document.getElementById(labelId);
+
+        function update() {
+            const val = parseFloat(slider.value);
+            label.textContent = formatFn ? formatFn(val) : val;
+        }
+
+        slider.addEventListener("input", update);
+        update();
+    }
+
+    bindSlider("initial_balance", "initial_balance_value", v => v.toLocaleString());
+    bindSlider("mean_return", "mean_return_value", v => v.toFixed(3));
+    bindSlider("volatility", "volatility_value", v => v.toFixed(3));
+    bindSlider("annual_withdrawal", "annual_withdrawal_value", v => v.toLocaleString());
+    bindSlider("inflation", "inflation_value", v => v.toFixed(3));
+    bindSlider("years", "years_value", v => Math.round(v));
+    bindSlider("n_sims", "n_sims_value", v => Math.round(v));
+
+    document.getElementById("run_sim").addEventListener("click", function () {
+        const params = new URLSearchParams({
+            initial_balance: document.getElementById("initial_balance").value,
+            mean_return: document.getElementById("mean_return").value,
+            volatility: document.getElementById("volatility").value,
+            annual_withdrawal: document.getElementById("annual_withdrawal").value,
+            inflation: document.getElementById("inflation").value,
+            years: document.getElementById("years").value,
+            n_sims: document.getElementById("n_sims").value,
+        });
+
+        fetch(`/api/simulate/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                document.getElementById("success_rate").textContent =
+                    (data.success_rate * 100).toFixed(1) + "%";
+                document.getElementById("median_ending").textContent =
+                    "$" + Math.round(data.median_ending).toLocaleString();
+                document.getElementById("p10_ending").textContent =
+                    "$" + Math.round(data.p10_ending).toLocaleString();
+                document.getElementById("p90_ending").textContent =
+                    "$" + Math.round(data.p90_ending).toLocaleString();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error running simulation");
+            });
+    });
+</script>
+{% endblock %}
