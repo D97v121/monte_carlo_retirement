@@ -1,4 +1,4 @@
-from monte_carlo import simulate_paths, evaluate_outcomes
+from finance_project.simulator.monte_carlo import simulate_paths, evaluate_outcomes
 def run_example() -> None:
     initial_balance = 1_000_000.0
     mean_return = 0.06         # 6 percent average annual return

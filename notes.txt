@@ -21,3 +21,31 @@ Outputs:
     Worst-case years
     Median outcome
     Charts
+
+Pages I need:
+- place to view saved senarios
+- place to add senarios
+    - slider adjustments
+    - graph output
+
+
+finance_project/
+│
+├── manage.py
+│
+├── finance_project/        ← Inner config folder (settings, URLs, etc.)
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+│
+└── simulator/              ← Your app folder (created by startapp)
+    ├── __init__.py
+    ├── admin.py
+    ├── apps.py
+    ├── migrations/
+    │   └── __init__.py
+    ├── models.py
+    ├── tests.py
+    └── views.py
